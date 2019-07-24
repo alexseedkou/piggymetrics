@@ -10,8 +10,6 @@ MONGODB_PASSWORD='123456'
 node {
 
  
-    withMaven(maven:'maven') {
- 
         stage('Checkout') {
             git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
         }
@@ -52,6 +50,5 @@ node {
         //     build job: 'customer-service-pipeline', wait: false
         // }      
  
-    }
- 
 }
+ 
