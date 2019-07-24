@@ -1,0 +1,56 @@
+node {
+
+    environment {
+        registry = "alexseedkou/docker-test"
+        registryCredential = 'dockerhub'
+        dockerImage = ''
+        CONFIG_SERVICE_PASSWORD='123456'
+        NOTIFICATION_SERVICE_PASSWORD='123456'
+        STATISTICS_SERVICE_PASSWORD='123456'
+        ACCOUNT_SERVICE_PASSWORD='123456'
+        MONGODB_PASSWORD='123456'
+    
+    }
+ 
+    withMaven(maven:'maven') {
+ 
+        stage('Checkout') {
+            git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
+        }
+ 
+        stage('Build') {
+            sh 'mvn clean package'
+ 
+            // def pom = readMavenPom file:'pom.xml'
+            // print pom.version
+            // env.version = pom.version
+        }
+ 
+        stage('Image') {
+            dir ('config') {
+                dockerImage = docker.build registry
+                // app.push()
+            }
+        }
+
+        stage('Deploy Image') {
+            docker.withRegistry('', registryCredential) {
+                dockerImage.push()
+            }
+        }
+
+        stage('Remove Unused docker image') {
+            sh "docker rmi $registry:$BUILD_NUMBER"
+        }
+ 
+        // stage ('Run') {
+        //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
+        // }
+ 
+        // stage ('Final') {
+        //     build job: 'customer-service-pipeline', wait: false
+        // }      
+ 
+    }
+ 
+}
