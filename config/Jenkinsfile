@@ -23,7 +23,7 @@ node {
  
         stage('Image') {
             dir ('config') {
-                dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                dockerImage = docker.build registry + ":config-image$BUILD_NUMBER"
                 // app.push()
             }
         }
@@ -35,7 +35,7 @@ node {
         }
 
         stage('Remove Unused docker image') {
-            sh "docker rmi $registry:$BUILD_NUMBER"
+            sh "docker rmi $registry:config-image$BUILD_NUMBER"
         }
  
         // stage ('Run') {
