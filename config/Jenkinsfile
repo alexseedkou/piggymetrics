@@ -16,14 +16,7 @@ node {
         }
  
         stage('Build') {
-            def mvnContainer = docker.image('maven:3.3.3-jdk-8')
-            mvnContainer.inside('-v /m2repo:/m2repo') {
-                writeFile file: 'settings.xml',
-                    text: '<settings><localRepository>/m2repo</localRepository></settings>'
-      
-                // Build with maven settings.xml file that specs the local Maven repo.
-                sh 'mvn -B -s settings.xml package'
-            }
+            sh 'mvn package'
         }
  
         stage('Image') {
