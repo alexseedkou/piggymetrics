@@ -45,7 +45,7 @@ node {
         // stage ('Final') {
         //     build job: 'customer-service-pipeline', wait: false
         // }   
-    } cache (e) {
+    } catch (e) {
         // If there was an exception thrown, the build failed
         currentBuild.result = "FAILED"
         throw e
