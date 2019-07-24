@@ -64,7 +64,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   def colorName = 'RED'
   def colorCode = '#FF0000'
   def buildUser = getBuildUser()
-  def subject = "${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]' by ${buildUser}\n"
+  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]' by ${buildUser}\n"
   def summary = "${subject} More info at: (${env.BUILD_URL})"
 
   // Override default values based on build status
@@ -86,17 +86,3 @@ def notifyBuild(String buildStatus = 'STARTED') {
 def getBuildUser() {
     return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
 }
-
- stages {
-        stage('Slack Message') {
-            steps {
-                script {
-                    BUILD_USER = getBuildUser()
-                }
-                slackSend channel: '#jenkins',
-                    color: 'good',
-                    message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} by ${BUILD_USER}\n More info at: ${env.BUILD_URL}"
-            
-            }
-        }
-    }
