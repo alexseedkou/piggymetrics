@@ -9,6 +9,11 @@ ACCOUNT_SERVICE_PASSWORD='123456'
 MONGODB_PASSWORD='123456'
 
 node {
+
+    stage('Checkout') {
+        git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
+    }
+
     stage('Validation') {
         dir('registry') {
             def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
@@ -26,10 +31,7 @@ node {
         try {
             notifyBuild('STARTED')
     
-            stage('Checkout') {
-                echo pwd()
-                git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
-            }
+ 
     
             stage('Build') {
                 sh 'mvn package -pl registry -am'
