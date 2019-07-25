@@ -33,9 +33,9 @@ node {
 
             try {
 
-                    notifyBuild('STARTED')
             
                     stage('Build') {
+                        notifyBuild('STARTED')
                         sh 'mvn package -pl config -am'
                     }
             
