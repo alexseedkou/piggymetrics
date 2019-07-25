@@ -105,6 +105,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
 }
 
 def getBuildUser() {
-    if (Cause.UserIdCause == null) return null;
-    return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+    def currentJob = currentBuild.rawBuild.getCause(Cause.UserIdCause);
+    if (currentJob == null) return null;
+    return currentJob.getUserId();
 }
