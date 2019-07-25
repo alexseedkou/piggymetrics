@@ -12,6 +12,7 @@ MONGODB_PASSWORD='123456'
 node {
     
         stage('Checkout') {
+            // test
             cmVars = checkout scm
             //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
         }
