@@ -82,8 +82,9 @@ def notifyBuild(String buildStatus = 'STARTED') {
   // Default values
   def colorName = 'RED'
   def colorCode = '#FF0000'
-  // def buildUser = getBuildUser()
-  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]\n'"
+  def buildUser = getBuildUser()
+  if (buildUser == null) buildUser = scmVarsRegistry.GIT_AUTHOR_NAME
+  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
   def summary = "${subject} More info at: (${env.BUILD_URL})"
 
   // Override default values based on build status
@@ -103,5 +104,6 @@ def notifyBuild(String buildStatus = 'STARTED') {
 }
 
 def getBuildUser() {
+    if (Cause.UserIdCause == null) return null;
     return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
 }

@@ -12,7 +12,7 @@ MONGODB_PASSWORD='123456'
 node {
     
         stage('Checkout') {
-            cmVars = checkout scm
+            scmVars = checkout scm
             //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
         }
 
@@ -81,8 +81,9 @@ def notifyBuild(String buildStatus = 'STARTED') {
     // Default values
     def colorName = 'RED'
     def colorCode = '#FF0000'
-    // def buildUser = getBuildUser()
-    def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]\n"
+    def buildUser = getBuildUser()
+    if (buildUser == null) buildUser = scmVars.GIT_AUTHOR_NAME
+    def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
     def summary = "${subject} More info at: (${env.BUILD_URL})"
 
     // Override default values based on build status
@@ -103,10 +104,6 @@ def notifyBuild(String buildStatus = 'STARTED') {
 
 
 def getBuildUser() {
-    def buildCase = urrentBuild.rawBuild.getCause(Cause.UserIdCause);
-    if (buildCase == null) {
-        return null;
-    } else {
-        return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
-    }
+    if (Cause.UserIdCause == null) return null;
+    return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
 }
