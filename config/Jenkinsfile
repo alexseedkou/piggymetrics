@@ -14,6 +14,7 @@ node {
         stage('Checkout') {
             scmVars = checkout scm
             echo scmVars.GIT_COMMITTER_NAME
+            echo scmVars.GIT_AUTHOR_NAME
             echo scmVars.GIT_COMMIT
             //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
         }
