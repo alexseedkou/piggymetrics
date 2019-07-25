@@ -2,7 +2,7 @@ def registry = "alexseedkou/docker-test"
 def registryCredential = 'dockerhub'
 def dockerImage = ''
 def CONTINUE_BUILD = true
-def scmVars = ''
+def scmVarsRegistry = ''
 CONFIG_SERVICE_PASSWORD='123456'
 NOTIFICATION_SERVICE_PASSWORD='123456'
 STATISTICS_SERVICE_PASSWORD='123456'
@@ -12,13 +12,13 @@ MONGODB_PASSWORD='123456'
 node {
 
     stage('Checkout') {
-        scmVars = checkout scm
+        scmVarsRegistry = checkout scm
         // git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
     }
 
     stage('Validation') {
         dir('registry') {
-            def strCount = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_COMMIT} ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
+            def strCount = sh(returnStdout: true, script: "git diff --name-only ${scmVarsRegistry.GIT_COMMIT} ${scmVarsRegistry.GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
             if(strCount=="0") {
                 echo "Skipping build no files updated"
                 CONTINUE_BUILD = false
