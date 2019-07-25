@@ -18,7 +18,7 @@ node {
         }
  
         stage('Build') {
-            sh 'mvn package'
+            sh 'mvn package -pl config -am'
         }
  
         stage('Image') {
@@ -53,6 +53,7 @@ node {
         // Success or failure, always send notifications
         notifyBuild(currentBuild.result)
     } 
+    
  
 }
  
