@@ -64,7 +64,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   def colorName = 'RED'
   def colorCode = '#FF0000'
   def buildUser = getBuildUser()
-  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]' by ${buildUser}\n"
+  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]\n'"
   def summary = "${subject} More info at: (${env.BUILD_URL})"
 
   // Override default values based on build status
