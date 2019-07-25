@@ -11,11 +11,11 @@ MONGODB_PASSWORD='123456'
 
 node {
     
-        stage('Checkout') {
-            scmVars = checkout scm
-            echo scmVars.GIT_COMMIT
-            //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
-        }
+        // stage('Checkout') {
+        //     scmVars = checkout scm
+        //     echo scmVars.GIT_COMMIT
+        //     //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
+        // }
 
         // stage('Validation') {
         //     dir('config') {
@@ -78,7 +78,7 @@ node {
 def notifyBuild(String buildStatus = 'STARTED') {
     // build status of null means successful
     buildStatus =  buildStatus ?: 'SUCCESSFUL'
-
+    scmVars = checkout scm
     // Default values
     def colorName = 'RED'
     def colorCode = '#FF0000'
