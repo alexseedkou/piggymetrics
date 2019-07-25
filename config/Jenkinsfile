@@ -64,7 +64,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   def colorName = 'RED'
   def colorCode = '#FF0000'
   def buildUser = getBuildUser()
-  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]' by ${buildUser}\n"
+  def subject = (buildUser == null) ? "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]'" : "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]' by ${buildUser}\n"
   def summary = "${subject} More info at: (${env.BUILD_URL})"
 
   // Override default values based on build status
@@ -84,5 +84,10 @@ def notifyBuild(String buildStatus = 'STARTED') {
 }
 
 def getBuildUser() {
-    return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+    def buildCase = urrentBuild.rawBuild.getCause(Cause.UserIdCause);
+    if (buildCase == null) {
+        return null;
+    } else {
+        return currentBuild.rawBuild.getCause(Cause.UserIdCause).getUserId()
+    }
 }
