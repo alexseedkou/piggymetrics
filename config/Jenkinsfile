@@ -1,6 +1,7 @@
 def registry = "alexseedkou/docker-test"
 def registryCredential = 'dockerhub'
 def dockerImage = ''
+def CONTINUE_BUILD = true;
 CONFIG_SERVICE_PASSWORD='123456'
 NOTIFICATION_SERVICE_PASSWORD='123456'
 STATISTICS_SERVICE_PASSWORD='123456'
@@ -9,77 +10,94 @@ MONGODB_PASSWORD='123456'
 
 node {
 
-    try {
-        notifyBuild('STARTED')
- 
-        stage('Checkout') {
-            echo pwd()
-            git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
-        }
- 
-        stage('Build') {
-            sh 'mvn package -pl config -am'
-        }
- 
-        stage('Image') {
-            dir ('config') {
-                dockerImage = docker.build registry + ":config-image$BUILD_NUMBER"
-                // app.push()
+    stage('Validation') {
+        dir('config') {
+            def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep config | wc -l").trim()
+            if(strCount=="0") {
+                echo "Skipping build no files updated"
+                CONTINUE_BUILD = false
+            } else {
+                echo "Changes found in the servicelayer module"
             }
         }
+    }
 
-        stage('Deploy Image') {
-            docker.withRegistry('', registryCredential) {
-                dockerImage.push()
+    if (CONTINUE_BUILD) {
+
+        try {
+
+            
+            notifyBuild('STARTED')
+    
+            stage('Checkout') {
+                echo pwd()
+                git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
             }
-        }
+    
+            stage('Build') {
+                sh 'mvn package -pl config -am'
+            }
+    
+            stage('Image') {
+                dir ('config') {
+                    dockerImage = docker.build registry + ":config-image$BUILD_NUMBER"
+                    // app.push()
+                }
+            }
 
-        stage('Remove Unused docker image') {
-            sh "docker rmi $registry:config-image$BUILD_NUMBER"
-        }
- 
-        // stage ('Run') {
-        //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
-        // }
- 
-        // stage ('Final') {
-        //     build job: 'customer-service-pipeline', wait: false
-        // }   
-    } catch (e) {
-        // If there was an exception thrown, the build failed
-        currentBuild.result = "FAILED"
-        throw e
-    }  finally {
-        // Success or failure, always send notifications
-        notifyBuild(currentBuild.result)
-    } 
-}
- 
-def notifyBuild(String buildStatus = 'STARTED') {
-  // build status of null means successful
-  buildStatus =  buildStatus ?: 'SUCCESSFUL'
+            stage('Deploy Image') {
+                docker.withRegistry('', registryCredential) {
+                    dockerImage.push()
+                }
+            }
 
-  // Default values
-  def colorName = 'RED'
-  def colorCode = '#FF0000'
-  // def buildUser = getBuildUser()
-  def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]\n"
-  def summary = "${subject} More info at: (${env.BUILD_URL})"
+            stage('Remove Unused docker image') {
+                sh "docker rmi $registry:config-image$BUILD_NUMBER"
+            }
+    
+            // stage ('Run') {
+            //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
+            // }
+    
+            // stage ('Final') {
+            //     build job: 'customer-service-pipeline', wait: false
+            // }   
+        } catch (e) {
+            // If there was an exception thrown, the build failed
+            currentBuild.result = "FAILED"
+            throw e
+        }  finally {
+            // Success or failure, always send notifications
+            notifyBuild(currentBuild.result)
+        } 
+    }
+    
+    def notifyBuild(String buildStatus = 'STARTED') {
+    // build status of null means successful
+    buildStatus =  buildStatus ?: 'SUCCESSFUL'
 
-  // Override default values based on build status
-  if (buildStatus == 'STARTED') {
-    color = 'YELLOW'
-    colorCode = '#FFFF00'
-  } else if (buildStatus == 'SUCCESSFUL') {
-    color = 'GREEN'
-    colorCode = '#00FF00'
-  } else {
-    color = 'RED'
-    colorCode = '#FF0000'
-  }
+    // Default values
+    def colorName = 'RED'
+    def colorCode = '#FF0000'
+    // def buildUser = getBuildUser()
+    def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}]\n"
+    def summary = "${subject} More info at: (${env.BUILD_URL})"
 
-  // Send notifications
-  slackSend (channel: '#deployment', color: colorCode, message: summary)
+    // Override default values based on build status
+    if (buildStatus == 'STARTED') {
+        color = 'YELLOW'
+        colorCode = '#FFFF00'
+    } else if (buildStatus == 'SUCCESSFUL') {
+        color = 'GREEN'
+        colorCode = '#00FF00'
+    } else {
+        color = 'RED'
+        colorCode = '#FF0000'
+    }
+
+    // Send notifications
+    slackSend (channel: '#deployment', color: colorCode, message: summary)
+    }   
 }
 
 def getBuildUser() {

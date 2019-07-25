@@ -1,6 +1,7 @@
 def registry = "alexseedkou/docker-test"
 def registryCredential = 'dockerhub'
 def dockerImage = ''
+def CONTINUE_BUILD = true
 CONFIG_SERVICE_PASSWORD='123456'
 NOTIFICATION_SERVICE_PASSWORD='123456'
 STATISTICS_SERVICE_PASSWORD='123456'
@@ -8,51 +9,65 @@ ACCOUNT_SERVICE_PASSWORD='123456'
 MONGODB_PASSWORD='123456'
 
 node {
-
-    try {
-        notifyBuild('STARTED')
- 
-        stage('Checkout') {
-            echo pwd()
-            git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
-        }
- 
-        stage('Build') {
-            sh 'mvn package -pl registry -am'
-        }
- 
-        stage('Image') {
-            dir ('registry') {
-                dockerImage = docker.build registry + ":registry-image$BUILD_NUMBER"
-                // app.push()
+    stage('Validation') {
+        dir('registry') {
+            def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
+            if(strCount=="0") {
+                echo "Skipping build no files updated"
+                CONTINUE_BUILD = false
+            } else {
+                echo "Changes found in the servicelayer module"
             }
         }
+    }
 
-        stage('Deploy Image') {
-            docker.withRegistry('', registryCredential) {
-                dockerImage.push()
+    if (CONTINUE_BUILD) {
+
+        try {
+            notifyBuild('STARTED')
+    
+            stage('Checkout') {
+                echo pwd()
+                git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
             }
-        }
+    
+            stage('Build') {
+                sh 'mvn package -pl registry -am'
+            }
+    
+            stage('Image') {
+                dir ('registry') {
+                    dockerImage = docker.build registry + ":registry-image$BUILD_NUMBER"
+                    // app.push()
+                }
+            }
 
-        stage('Remove Unused docker image') {
-            sh "docker rmi $registry:registry-image$BUILD_NUMBER"
-        }
- 
-        // stage ('Run') {
-        //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
-        // }
- 
-        // stage ('Final') {
-        //     build job: 'customer-service-pipeline', wait: false
-        // }   
-    } catch (e) {
-        // If there was an exception thrown, the build failed
-        currentBuild.result = "FAILED"
-        throw e
-    }  finally {
-        // Success or failure, always send notifications
-        notifyBuild(currentBuild.result)
-    } 
+            stage('Deploy Image') {
+                docker.withRegistry('', registryCredential) {
+                    dockerImage.push()
+                }
+            }
+
+            stage('Remove Unused docker image') {
+                sh "docker rmi $registry:registry-image$BUILD_NUMBER"
+            }
+    
+            // stage ('Run') {
+            //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
+            // }
+    
+            // stage ('Final') {
+            //     build job: 'customer-service-pipeline', wait: false
+            // }   
+        } catch (e) {
+            // If there was an exception thrown, the build failed
+            currentBuild.result = "FAILED"
+            throw e
+        }  finally {
+            // Success or failure, always send notifications
+            notifyBuild(currentBuild.result)
+        } 
+    }
  
 }
  
