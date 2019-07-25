@@ -16,9 +16,7 @@ node {
 
         stage('Validation') {
             dir('config') {
-            sh "echo ${env.BRANCH_NAME}"
-            sh "echo ${GIT_PREVIOUS_SUCCESSFUL_COMMIT}"
-            def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep config | wc -l").trim()
+                def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep config | wc -l").trim()
                 if(strCount=="0") {
                     echo "Skipping build no files updated"
                     CONTINUE_BUILD = false
@@ -62,20 +60,20 @@ node {
                     // stage ('Final') {
                     //     build job: 'customer-service-pipeline', wait: false
                     // }   
-                } catch (e) {
+            } catch (e) {
                     // If there was an exception thrown, the build failed
                     currentBuild.result = "FAILED"
                     throw e
-                }  finally {
+            }  finally {
                     // Success or failure, always send notifications
                     notifyBuild(currentBuild.result)
-                } 
-            }
+            } 
         }
+    }
     
 }
     
-    def notifyBuild(String buildStatus = 'STARTED') {
+def notifyBuild(String buildStatus = 'STARTED') {
     // build status of null means successful
     buildStatus =  buildStatus ?: 'SUCCESSFUL'
 
