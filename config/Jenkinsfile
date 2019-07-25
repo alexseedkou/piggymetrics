@@ -2,7 +2,6 @@ def registry = "alexseedkou/docker-test";
 def registryCredential = 'dockerhub';
 def dockerImage = '';
 def CONTINUE_BUILD = true;
-def scmVars = checkout scm;
 CONFIG_SERVICE_PASSWORD='123456'
 NOTIFICATION_SERVICE_PASSWORD='123456'
 STATISTICS_SERVICE_PASSWORD='123456'
@@ -78,7 +77,7 @@ node {
 def notifyBuild(String buildStatus = 'STARTED') {
     // build status of null means successful
     buildStatus =  buildStatus ?: 'SUCCESSFUL'
-    // scmVars = checkout scm
+    def scmVars = checkout scm;
     // Default values
     def colorName = 'RED'
     def colorCode = '#FF0000'

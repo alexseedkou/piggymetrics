@@ -2,7 +2,6 @@ def registry = "alexseedkou/docker-test"
 def registryCredential = 'dockerhub'
 def dockerImage = ''
 def CONTINUE_BUILD = true
-def scmVarsRegistry = '';
 CONFIG_SERVICE_PASSWORD='123456'
 NOTIFICATION_SERVICE_PASSWORD='123456'
 STATISTICS_SERVICE_PASSWORD='123456'
@@ -13,8 +12,7 @@ node {
 
     stage('Checkout') {
         // test
-        scmVarsRegistry = checkout scm
-        // git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
+        git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
     }
 
     // stage('Validation') {
@@ -84,7 +82,8 @@ def notifyBuild(String buildStatus = 'STARTED') {
   def colorName = 'RED'
   def colorCode = '#FF0000'
   def buildUser = getBuildUser()
-  if (buildUser == null) buildUser = sh(returnStdout: true, script: "git --no-pager show -s --format='%an' ${scmVarsRegistry.GIT_COMMIT}" )
+  def scmVars = checkout scm;
+  if (buildUser == null) buildUser = sh(returnStdout: true, script: "git --no-pager show -s --format='%an' ${scmVarsGIT_COMMIT}" )
   def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
   def summary = "${subject} More info at: (${env.BUILD_URL})"
 
