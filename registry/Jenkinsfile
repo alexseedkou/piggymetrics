@@ -16,17 +16,17 @@ node {
         // git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
     }
 
-    stage('Validation') {
-        dir('registry') {
-            def strCount = sh(returnStdout: true, script: "git diff --name-only ${scmVarsRegistry.GIT_COMMIT} ${scmVarsRegistry.GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
-            if(strCount=="0") {
-                echo "Skipping build no files updated"
-                CONTINUE_BUILD = false
-            } else {
-                echo "Changes found in the servicelayer module"
-            }
-        }
-    }
+    // stage('Validation') {
+    //     dir('registry') {
+    //         def strCount = sh(returnStdout: true, script: "git diff --name-only ${scmVarsRegistry.GIT_COMMIT} ${scmVarsRegistry.GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
+    //         if(strCount=="0") {
+    //             echo "Skipping build no files updated"
+    //             CONTINUE_BUILD = false
+    //         } else {
+    //             echo "Changes found in the servicelayer module"
+    //         }
+    //     }
+    // }
 
     if (CONTINUE_BUILD) {
 
