@@ -18,8 +18,7 @@ node {
         }
  
         stage('Build') {
-            sh 'cd config'
-            sh 'mvn package'
+            sh 'mvn package -pl config -am'
         }
  
         stage('Image') {
