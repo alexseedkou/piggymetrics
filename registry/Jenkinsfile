@@ -10,13 +10,12 @@ MONGODB_PASSWORD='123456'
 
 node {
 
-    // stage('Checkout') {
-    //     git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
-    // }
+    stage('Checkout') {
+        git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
+    }
 
     stage('Validation') {
         dir('registry') {
-            git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
             def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep registry | wc -l").trim()
             if(strCount=="0") {
                 echo "Skipping build no files updated"
