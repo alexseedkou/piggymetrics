@@ -71,6 +71,7 @@ node {
             notifyBuild(currentBuild.result)
         } 
     }
+}
     
     def notifyBuild(String buildStatus = 'STARTED') {
     // build status of null means successful
@@ -97,8 +98,8 @@ node {
 
     // Send notifications
     slackSend (channel: '#deployment', color: colorCode, message: summary)
-    }   
-}
+}   
+
 
 def getBuildUser() {
     def buildCase = urrentBuild.rawBuild.getCause(Cause.UserIdCause);
