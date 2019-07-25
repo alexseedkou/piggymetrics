@@ -9,73 +9,70 @@ ACCOUNT_SERVICE_PASSWORD='123456'
 MONGODB_PASSWORD='123456'
 
 node {
+    
+        stage('Checkout') {
+            git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
+        }
 
-    stage('Validation') {
-        dir('config') {
-            withCheckout(scm) {
-                echo "GIT_COMMIT is ${env.GIT_COMMIT}"
-            }
+        stage('Validation') {
+            dir('config') {
             sh "echo ${env.BRANCH_NAME}"
             sh "echo ${GIT_PREVIOUS_SUCCESSFUL_COMMIT}"
             def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep config | wc -l").trim()
-            if(strCount=="0") {
-                echo "Skipping build no files updated"
-                CONTINUE_BUILD = false
-            } else {
-                echo "Changes found in the servicelayer module"
+                if(strCount=="0") {
+                    echo "Skipping build no files updated"
+                    CONTINUE_BUILD = false
+                } else {
+                    echo "Changes found in the servicelayer module"
+                }
             }
         }
-    }
 
-    if (CONTINUE_BUILD) {
+        if (CONTINUE_BUILD) {
 
-        try {
+            try {
 
+                    notifyBuild('STARTED')
             
-            notifyBuild('STARTED')
-    
-            stage('Checkout') {
-                echo pwd()
-                git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
-            }
-    
-            stage('Build') {
-                sh 'mvn package -pl config -am'
-            }
-    
-            stage('Image') {
-                dir ('config') {
-                    dockerImage = docker.build registry + ":config-image$BUILD_NUMBER"
-                    // app.push()
-                }
-            }
+                    stage('Build') {
+                        sh 'mvn package -pl config -am'
+                    }
+            
+                    stage('Image') {
+                        dir ('config') {
+                            dockerImage = docker.build registry + ":config-image$BUILD_NUMBER"
+                            // app.push()
+                        }
+                    }
 
-            stage('Deploy Image') {
-                docker.withRegistry('', registryCredential) {
-                    dockerImage.push()
-                }
-            }
+                    stage('Deploy Image') {
+                        docker.withRegistry('', registryCredential) {
+                            dockerImage.push()
+                        }
+                    }
 
-            stage('Remove Unused docker image') {
-                sh "docker rmi $registry:config-image$BUILD_NUMBER"
+                    stage('Remove Unused docker image') {
+                        sh "docker rmi $registry:config-image$BUILD_NUMBER"
+                    }
+            
+                    // stage ('Run') {
+                    //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
+                    // }
+            
+                    // stage ('Final') {
+                    //     build job: 'customer-service-pipeline', wait: false
+                    // }   
+                } catch (e) {
+                    // If there was an exception thrown, the build failed
+                    currentBuild.result = "FAILED"
+                    throw e
+                }  finally {
+                    // Success or failure, always send notifications
+                    notifyBuild(currentBuild.result)
+                } 
             }
+        }
     
-            // stage ('Run') {
-            //     docker.image("localhost:5000/account-service:${env.version}").run('-p 2222:2222 -h account --name account --link discovery')
-            // }
-    
-            // stage ('Final') {
-            //     build job: 'customer-service-pipeline', wait: false
-            // }   
-        } catch (e) {
-            // If there was an exception thrown, the build failed
-            currentBuild.result = "FAILED"
-            throw e
-        }  finally {
-            // Success or failure, always send notifications
-            notifyBuild(currentBuild.result)
-        } 
-    }
 }
     
     def notifyBuild(String buildStatus = 'STARTED') {
