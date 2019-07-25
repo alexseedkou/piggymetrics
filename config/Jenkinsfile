@@ -12,6 +12,8 @@ node {
 
     stage('Validation') {
         dir('config') {
+            sh "echo ${env.BRANCH_NAME}"
+            sh "echo ${GIT_PREVIOUS_SUCCESSFUL_COMMIT}"
             def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep config | wc -l").trim()
             if(strCount=="0") {
                 echo "Skipping build no files updated"
