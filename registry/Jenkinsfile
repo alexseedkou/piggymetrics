@@ -22,7 +22,7 @@ node {
         }
  
         stage('Image') {
-            dir ('config') {
+            dir ('registry') {
                 dockerImage = docker.build registry + ":registry-image$BUILD_NUMBER"
                 // app.push()
             }
