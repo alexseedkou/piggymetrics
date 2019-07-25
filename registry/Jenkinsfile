@@ -84,7 +84,7 @@ def notifyBuild(String buildStatus = 'STARTED') {
   def colorName = 'RED'
   def colorCode = '#FF0000'
   def buildUser = getBuildUser()
-  if (buildUser == null) buildUser = scmVarsRegistry.GIT_AUTHOR_NAME
+  if (buildUser == null) buildUser = sh(returnStdout: true, script: "git log --format='%an <%ae> ${scmVarsRegistry.GIT_COMMIT_ID}" )
   def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
   def summary = "${subject} More info at: (${env.BUILD_URL})"
 
