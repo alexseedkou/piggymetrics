@@ -16,6 +16,7 @@ node {
             echo scmVars.GIT_COMMITTER_NAME
             echo scmVars.GIT_AUTHOR_NAME
             echo scmVars.GIT_COMMIT
+            printenv
             //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
         }
 
