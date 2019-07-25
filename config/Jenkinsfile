@@ -33,9 +33,9 @@ node {
 
             try {
 
+                    notifyBuild('STARTED')
             
                     stage('Build') {
-                        notifyBuild('STARTED')
                         sh 'mvn package -pl config -am'
                     }
             
@@ -73,35 +73,35 @@ node {
             } 
         }
     
+        def notifyBuild(String buildStatus = 'STARTED') {
+            // build status of null means successful
+            buildStatus =  buildStatus ?: 'SUCCESSFUL'
+            // def scmVars = checkout scm;
+            // Default values
+            def colorName = 'RED'
+            def colorCode = '#FF0000'
+            def buildUser = getBuildUser()
+            if (buildUser == null) buildUser = sh(returnStdout: true, script: "git --no-pager show -s --format='%an' ${scmVars.GIT_COMMIT}" )
+            def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
+            def summary = "${subject} More info at: (${env.BUILD_URL})"
+
+            // Override default values based on build status
+            if (buildStatus == 'STARTED') {
+                color = 'YELLOW'
+                colorCode = '#FFFF00'
+            } else if (buildStatus == 'SUCCESSFUL') {
+                color = 'GREEN'
+                colorCode = '#00FF00'
+            } else {
+                color = 'RED'
+                colorCode = '#FF0000'
+            }
+
+            // Send notifications
+            slackSend (channel: '#deployment', color: colorCode, message: summary)
+        }   
 }
     
-def notifyBuild(String buildStatus = 'STARTED') {
-    // build status of null means successful
-    buildStatus =  buildStatus ?: 'SUCCESSFUL'
-    // def scmVars = checkout scm;
-    // Default values
-    def colorName = 'RED'
-    def colorCode = '#FF0000'
-    def buildUser = getBuildUser()
-    if (buildUser == null) buildUser = sh(returnStdout: true, script: "git --no-pager show -s --format='%an' ${scmVars.GIT_COMMIT}" )
-    def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
-    def summary = "${subject} More info at: (${env.BUILD_URL})"
-
-    // Override default values based on build status
-    if (buildStatus == 'STARTED') {
-        color = 'YELLOW'
-        colorCode = '#FFFF00'
-    } else if (buildStatus == 'SUCCESSFUL') {
-        color = 'GREEN'
-        colorCode = '#00FF00'
-    } else {
-        color = 'RED'
-        colorCode = '#FF0000'
-    }
-
-    // Send notifications
-    slackSend (channel: '#deployment', color: colorCode, message: summary)
-}   
 
 
 def getBuildUser() {
