@@ -12,7 +12,7 @@ MONGODB_PASSWORD='123456'
 node {
     
         stage('Checkout') {
-            cmVars = checkout scm
+            scmVars = checkout scm
             //echo scmVars.GIT_COMMIT
             //git url: 'https://github.com/alexseedkou/piggymetrics.git', credentialsId: 'alexseedkou', branch: 'master'
         }
@@ -83,7 +83,6 @@ def notifyBuild(String buildStatus = 'STARTED') {
     def colorName = 'RED'
     def colorCode = '#FF0000'
     def buildUser = getBuildUser()
-    echo "from function: ${scmVars.GIT_COMMIT}"
     if (buildUser == null) buildUser = sh(returnStdout: true, script: "git --no-pager show -s --format='%an' ${scmVars.GIT_COMMIT}" )
     def subject = "@channel ${buildStatus}: Job '${env.JOB_NAME} build [${env.BUILD_NUMBER}] by ${buildUser}\n'"
     def summary = "${subject} More info at: (${env.BUILD_URL})"
