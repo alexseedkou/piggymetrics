@@ -1,2 +1,2 @@
 so frustrated
-so frustratedso frustratedso frustratedso frustratedso frustratedso frustratedso frustratedso frustratedso
+so frustratedso frustratedso frustratedso
